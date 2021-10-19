@@ -1,0 +1,31 @@
+parameters:
+    paths:
+        - module/
+    fileExtensions:
+        - php
+        - phtml
+    level: max
+    reportUnmatchedIgnoredErrors: false
+    checkMissingIterableValueType: false
+    inferPrivatePropertyTypeFromConstructor: true
+    scanDirectories:
+        - module
+    scanFiles:
+        - vendor/autoload.php
+    ignoreErrors:
+        -
+            message: '#Call to an undefined method [a-zA-Z0-9\\_]+::escapeHtml\(\)#'
+            paths:
+                - */**.phtml
+        -
+            message: '#Undefined variable: \$this#'
+            paths:
+                - */**.phtml
+        -
+            message: '#Using \$this outside a class.#'
+            paths:
+                - */**.phtml
+        -
+            message: '#Variable \$this might not be defined.#'
+            paths:
+                - */**.phtml

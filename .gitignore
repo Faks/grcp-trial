@@ -1,0 +1,14 @@
+.idea
+.vagrant/
+vendor/
+config/development.config.php
+data/cache/*
+!data/cache/.gitkeep
+phpunit.xml
+public/*
+!public/index.php
+!public/img
+!public/fonts
+!public/css
+node_modules
+cghooks.lock

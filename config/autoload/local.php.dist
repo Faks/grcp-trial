@@ -1,0 +1,33 @@
+<?php
+
+use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+
+return [
+    'doctrine' => [
+        'driver' => [
+            'Application\_driver' => [
+                'class' => AnnotationDriver::class,
+                'cache' => 'array',
+                'paths' => ['module/Application/src/Entity']
+            ],
+            'orm_default' => [
+                'drivers' => [
+                    'Application\Entity' => 'Application\_driver'
+                ]
+            ]
+        ],
+        'connection' => [
+            'orm_default' => [
+                'params' => [
+                    'port' => '3306',
+                    'driver' => 'pdo_mysql',
+                    'host' => getenv('DB_HOST'),
+                    'user' =>  getenv('DB_USER'),
+                    'password' => getenv('DB_PASSWORD'),
+                    'dbname' => getenv('DB_NAME'),
+                    'charset' => 'utf8'
+                ],
+            ],
+        ],
+    ],
+];
