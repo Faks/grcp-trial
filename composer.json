@@ -18,7 +18,7 @@
         "zendframework/zend-servicemanager-di": "^1.2.1",
         "doctrine/doctrine-orm-module": "^4.0",
         "guzzlehttp/guzzle": "^7.3",
-        "ext-pdo_mysql": "^7.4",
+        "ext-pdo_mysql": "^7.3",
         "phpstan/phpstan": "^0.12.90",
         "squizlabs/php_codesniffer": "^3.6",
         "brainmaestro/composer-git-hooks": "^2.8",
