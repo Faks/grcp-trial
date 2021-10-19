@@ -10,7 +10,7 @@
     ],
     "homepage": "http://framework.zend.com/",
     "require": {
-        "php": "^5.6 || ^7.0",
+        "php": "^5.6 || ^7.0 || ^7.3",
         "zendframework/zend-component-installer": "^1.0 || ^2.1",
         "zendframework/zend-mvc": "^3.1.1",
         "zfcampus/zf-development-mode": "^3.2",
@@ -22,7 +22,8 @@
         "phpstan/phpstan": "^0.12.90",
         "squizlabs/php_codesniffer": "^3.6",
         "brainmaestro/composer-git-hooks": "^2.8",
-        "slevomat/coding-standard": "^7.0"
+        "slevomat/coding-standard": "^7.0",
+        "vlucas/phpdotenv": "^5.3"
     },
     "autoload": {
         "psr-4": {

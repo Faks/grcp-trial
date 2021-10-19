@@ -1,5 +1,5 @@
 # Zend Framework test-assignment
-- PHP ^7.4 with pdo_mysql module
+- PHP ^7.3 with pdo_mysql module
 - MySQL
 - Doctrine
 - Vue.js 
