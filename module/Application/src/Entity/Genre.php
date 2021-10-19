@@ -39,7 +39,7 @@ class Genre
         $this->movies = new ArrayCollection();
     }
 
-    public function addMovie($movie): void
+    public function addMovie(Movie $movie): void
     {
         $this->movies[] = $movie;
     }

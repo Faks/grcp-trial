@@ -17,6 +17,10 @@ use Laminas\Json\Json;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\JsonModel;
 
+use function array_map;
+use function explode;
+use function trim;
+
 class IndexController extends AbstractActionController
 {
     /**
@@ -68,23 +72,25 @@ class IndexController extends AbstractActionController
 
     /**
      * @return ORMException|\Exception|JsonModel
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws ORMException
      */
     public function searchAction()
     {
         $request = $this->getRequest();
 
-        if (!$request->getContent()) {
+        if (! $request->getContent()) {
             return $this->createSearchView();
         }
 
         $this->searchForm->setInputFilter($this->searchMovie->getInputFilter())
             ->setData(Json::decode($request->getContent(), 1));
 
-        if (!$this->searchForm->isValid()) {
+        if (! $this->searchForm->isValid()) {
             return $this->createSearchView();
         }
 
-        $this->searchMovie->exchangeArray((array) $this->searchForm->getData());
+        $this->searchMovie->exchangeArray((array)$this->searchForm->getData());
 
         $guzzleClient = new Guzzle();
 
@@ -93,26 +99,28 @@ class IndexController extends AbstractActionController
                 'http://www.omdbapi.com/?t=%s&type=movie&r=json&apikey=32f4648',
                 $this->searchMovie->getName()
             )
-        )->getBody()->getContents();
+        )
+            ->getBody()
+            ->getContents();
 
         if ($omdbResponse) {
             $omdbResponse = Json::decode($omdbResponse, 1);
         }
 
-        if (
-            !is_array($omdbResponse) ||
-            !isset($omdbResponse['Title']) ||
-            !isset($omdbResponse['Genre']) ||
-            !isset($omdbResponse['Language'])
-        ) {
+        if (! isset($omdbResponse['Title'], $omdbResponse['Genre'], $omdbResponse['Language']) || ! is_array($omdbResponse)) {
             return $this->createSearchView();
         }
 
         /**
-         * Convert response csv data values to array
+         * Convert response strings values to array and filter out space
          */
-        $omdbResponse['genres'] = str_getcsv($omdbResponse['Genre'], ",");
-        $omdbResponse['languages'] = str_getcsv($omdbResponse['Language'], ",");
+        $omdbResponse['genres'] = array_map(static function (string $genre) {
+            return trim($genre);
+        }, explode(',', $omdbResponse['Genre']));
+
+        $omdbResponse['languages'] = array_map(static function (string $language) {
+            return trim($language);
+        }, explode(',', $omdbResponse['Language']));
 
         $this->saveNewMovie(
             trim($omdbResponse['Title']),
@@ -154,13 +162,18 @@ class IndexController extends AbstractActionController
             ->select('m')
             ->from(Movie::class, 'm');
 
-        if (!empty($this->searchMovie->getGenre())) {
+        if (! empty($this->searchMovie->getName())) {
+            $qb->andWhere('m.name = :name')
+                ->setParameter('name', $this->searchMovie->getName());
+        }
+
+        if (! empty($this->searchMovie->getGenre())) {
             $qb->leftJoin('m.genres', 'g')
                 ->andWhere('g.genre = :genre')
                 ->setParameter('genre', $this->searchMovie->getGenre());
         }
 
-        if (!empty($this->searchMovie->getLanguage())) {
+        if (! empty($this->searchMovie->getLanguage())) {
             $qb->leftJoin('m.languages', 'l')
                 ->andWhere('l.language = :lang')
                 ->setParameter('lang', $this->searchMovie->getLanguage());
@@ -199,16 +212,18 @@ class IndexController extends AbstractActionController
     }
 
     /**
-     * @param string $name
+     * @param string   $name
      * @param string[] $genres
      * @param string[] $languages
-     * @return bool
+     *
+     * @return void
+     * @throws ORMException
      */
     private function saveNewMovie(
         string $name,
         array $genres,
         array $languages
-    ): bool {
+    ): void {
         $movies = $this->entityManager
             ->getRepository(Movie::class)
             ->findBy(['name' => $name]);
@@ -221,7 +236,7 @@ class IndexController extends AbstractActionController
 
             if (null === $dbGenre) {
                 $dbGenre = new Genre();
-                $dbGenre->setGenre(trim($genre));
+                $dbGenre->setGenre($genre);
 
                 $this->entityManager->persist($dbGenre);
             }
@@ -237,12 +252,12 @@ class IndexController extends AbstractActionController
 
             if (null === $dbLanguage) {
                 $dbLanguage = new Language();
-                $dbLanguage->setLanguage(trim($language));
+                $dbLanguage->setLanguage($language);
 
                 $this->entityManager->persist($dbLanguage);
             }
 
-            $dbLanguages = [$dbLanguage];
+            $dbLanguages[] = $dbLanguage;
         }
 
         if (count($movies) < 1) {
@@ -266,7 +281,5 @@ class IndexController extends AbstractActionController
         }
 
         $this->entityManager->flush();
-
-        return true;
     }
 }

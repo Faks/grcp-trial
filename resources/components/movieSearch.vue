@@ -1,7 +1,7 @@
 <template>
 	<div class="col-sm-7">
 	    <div class="form card-body">
-	        <form @submit.prevent="handleSubmit">
+	        <form @submit.prevent>
 	            <label for="name" class="col-form-label">Search Movie Title</label>
 
 	            <div class="input-group-text">
@@ -43,6 +43,29 @@
 	            <span v-else>-</span>
 	        </div>
 	    </div>
+
+    <div class="flex-lg-row pt-2">
+      <h4>All movies</h4>
+      <div class="col-auto">
+        <table v-if="allMovies.length" class="table">
+          <thead>
+          <tr>
+            <th v-for="column in tableColumns">
+              {{ column.title }}
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="movie in allMovies">
+            <td v-for="column in tableColumns">
+              {{ getField(movie, column.field) }}
+            </td>
+          </tr>
+          </tbody>
+        </table>
+        <span v-else>-</span>
+      </div>
+    </div>
 	</div>
 </template>
 
@@ -60,6 +83,7 @@
 	            genreOptions: [],
 	            languageOptions: [],
 	            movies: [],
+              allMovies: [],
 	            tableColumns: [{
 	                title: 'Title',
 	                field: 'name'
@@ -87,10 +111,30 @@
             }
         },
         created: function () {
-            this.debouncedSearch = _.debounce(this.searchMovies, 500);
+            this.debouncedSearch = _.debounce(this.collectFilters, 500);
             this.debouncedSearch();
         },
         methods: {
+          collectFilters() {
+             this.searchMovies();
+             this.getAllMovies();
+          },
+          async getAllMovies() {
+            const response = await fetch(
+                '/search',
+                {
+                  method: 'POST',
+                  body: JSON.stringify({}),
+                  headers: {
+                    'Content-type': 'application/json',
+                  },
+                }
+            );
+
+            const responseData = await response.json();
+
+            this.allMovies = responseData.movies;
+          },
             async searchMovies() {
             	const response = await fetch(
                     '/search',
